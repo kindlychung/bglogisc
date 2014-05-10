@@ -1,7 +1,7 @@
 require(Matrix)
 logreg = function(y, x) {
     x = as.matrix(x)
-    x = apply(x, 2, scale)
+    # x = apply(x, 2, scale)
     x = cbind(1, x)
     m = nrow(x)
     n = ncol(x)
@@ -30,7 +30,7 @@ logreg = function(y, x) {
         if(max(abs(newderivJ - derivJ)) < derivThresh) {
             break
         }
-        newJ = -(t(y) %*% log(h) + t(0-y) %*% log(1 -h))
+        newJ = -(t(y) %*% log(h) + t(1-y) %*% log(1 -h))
         if(newJ > J) {
             alpha = alpha/2
         }
@@ -42,57 +42,58 @@ logreg = function(y, x) {
     # # hessian matrix of cost function
     hess = t(x) %*% Diagonal(x = as.vector(w)) %*% x
     seMat = sqrt(diag(solve(hess)))
+    print(seMat)
     zscore = b / seMat
     cbind(b, zscore)
 }
-
-nr = 5000
-nc = 2
-# set.seed(17)
-x = matrix(rnorm(nr*nc, 3, 9), nr)
-# x = apply(x, 2, scale)
-# y = matrix(sample(0:1, nr, repl=T), nr)
-h = 1/(1 + exp(-x %*% rnorm(nc)))
-y = round(h)
-y[1:round(nr/2)] = sample(0:1, round(nr/2), repl=T)
-
-
-ntests = 13
-testglm = function() {
-    nr = 5000
-    nc = 2
-    # set.seed(17)
-    x = matrix(rnorm(nr*nc, 3, 9), nr)
-    # x = apply(x, 2, scale)
-    # y = matrix(sample(0:1, nr, repl=T), nr)
-    h = 1/(1 + exp(-x %*% rnorm(nc)))
-    y = round(h)
-    y[1:round(nr/2)] = sample(0:1, round(nr/2), repl=T)
-    for(i in 1:ntests) {
-        res = summary(glm(y~x, family=binomial))$coef[, c(1, 3)]
-    }
-    res
-}
-
-testlogreg = function() {
-    nr = 5000
-    nc = 2
-    # set.seed(17)
-    x = matrix(rnorm(nr*nc, 3, 9), nr)
-    # x = apply(x, 2, scale)
-    # y = matrix(sample(0:1, nr, repl=T), nr)
-    h = 1/(1 + exp(-x %*% rnorm(nc)))
-    y = round(h)
-    y[1:round(nr/2)] = sample(0:1, round(nr/2), repl=T)
-    for(i in 1:ntests) {
-        res = logreg(y, x)
-    }
-    res
-}
-
-print(system.time(testlogreg()))
-print(system.time(testglm()))
-
+# 
+# nr = 5000
+# nc = 2
+# # set.seed(17)
+# x = matrix(rnorm(nr*nc, 3, 9), nr)
+# # x = apply(x, 2, scale)
+# # y = matrix(sample(0:1, nr, repl=T), nr)
+# h = 1/(1 + exp(-x %*% rnorm(nc)))
+# y = round(h)
+# y[1:round(nr/2)] = sample(0:1, round(nr/2), repl=T)
+# 
+# 
+# ntests = 13
+# testglm = function() {
+#     nr = 5000
+#     nc = 2
+#     # set.seed(17)
+#     x = matrix(rnorm(nr*nc, 3, 9), nr)
+#     # x = apply(x, 2, scale)
+#     # y = matrix(sample(0:1, nr, repl=T), nr)
+#     h = 1/(1 + exp(-x %*% rnorm(nc)))
+#     y = round(h)
+#     y[1:round(nr/2)] = sample(0:1, round(nr/2), repl=T)
+#     for(i in 1:ntests) {
+#         res = summary(glm(y~x, family=binomial))$coef[, c(1, 3)]
+#     }
+#     res
+# }
+# 
+# testlogreg = function() {
+#     nr = 5000
+#     nc = 2
+#     # set.seed(17)
+#     x = matrix(rnorm(nr*nc, 3, 9), nr)
+#     # x = apply(x, 2, scale)
+#     # y = matrix(sample(0:1, nr, repl=T), nr)
+#     h = 1/(1 + exp(-x %*% rnorm(nc)))
+#     y = round(h)
+#     y[1:round(nr/2)] = sample(0:1, round(nr/2), repl=T)
+#     for(i in 1:ntests) {
+#         res = logreg(y, x)
+#     }
+#     res
+# }
+# 
+# print(system.time(testlogreg()))
+# print(system.time(testglm()))
+# 
 # nbench = 100
 # benchres = matrix(NA, nbench, 2)
 # bothres = matrix(NA, 2*nbench, nc)
@@ -113,3 +114,14 @@ print(system.time(testglm()))
 # head(benchres)
 # head(bothres)
 
+set.seed(17)
+nr = 5000
+nc = 2
+x = matrix(rnorm(nr*nc), nr)
+h = 1/(1 + exp(-x %*% rnorm(nc)))
+y = round(h)
+y[1:round(nr/2)] = sample(0:1, round(nr/2), repl=T)
+write.table(x, file="x.csv", quote=FALSE, sep=",", col.names=FALSE, row.names=FALSE)
+write.table(y, file="y.csv", quote=FALSE, sep=",", col.names=FALSE, row.names=FALSE)
+summary(glm(y~x, family=binomial))$coef[, c(1, 3)]
+logreg(y, x)
