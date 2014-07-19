@@ -1,0 +1,8 @@
+CFLAGS += -Wall
+CFLAGS += -O3
+CFLAGS += -std=c++11
+!cc =    |> g++ %f $(CFLAGS)       -c -o %o |> %B.o
+!ccpic = |> g++ %f $(CFLAGS) -fPIC -c -o %o |> %B.o
+!so = |> g++ %f -shared -o %o |>
+!ar =    |> ar crs %o %f |>
+
